@@ -43,7 +43,7 @@ async function run() {
         client.connect();
         const userCollection = client.db('rent-property').collection('users');
         const propertyCollection = client.db('rent-property').collection('properties');
-        const applicationCollection = client.db('rent-property').collection('bookings');
+        const applicationCollection = client.db('rent-property').collection('applications');
 
         // method for managing users by users theme selves 
 
@@ -75,7 +75,7 @@ async function run() {
         })
 
         // to give property for rent from seller
-        app.post('/property', async (req, res) => {
+        app.post('/property', verifyJWT, async (req, res) => {
             const property = req.body;
             const result = await propertyCollection.insertOne(property);
             res.send(result);
@@ -83,7 +83,7 @@ async function run() {
 
         // getting all properties 
         app.get('/property', async (req, res) => {
-            const properties = await propertyCollection.find().toArray();
+            const properties = (await propertyCollection.find().toArray()).reverse();
             res.send(properties);
         });
 
@@ -102,7 +102,7 @@ async function run() {
         });
 
         // to update the status of the application after getting response from the seller  
-        app.patch('/applications', async (req, res) => {
+        app.patch('/applications', verifyJWT, async (req, res) => {
             const { id, status, email } = req.query;
             console.log(id, status, email);
             const application = await applicationCollection.findOne({ sellerEmail: email });
@@ -122,14 +122,14 @@ async function run() {
         });
 
         // to get all the properties that a renter applied for 
-        app.get('/my-rents/:email', async (req, res) => {
+        app.get('/my-rents/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
             const bookings = await applicationCollection.find({ renterEmail: email }).toArray();
             res.send(bookings);
         });
 
         // to get all the properties that a seller posted for rent 
-        app.get('/my-sales/:email', async (req, res) => {
+        app.get('/my-sales/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
             const myProperties = await propertyCollection.find({ sellerEmail: email }).toArray();
             res.send(myProperties);
@@ -149,7 +149,7 @@ async function run() {
         });
 
         // to get all applications for a particular property
-        app.get('/applications/:id', async (req, res) => {
+        app.get('/applications/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const rentApplications = await applicationCollection.find({ propertyId: id }).toArray();
             res.send(rentApplications);
