@@ -148,7 +148,7 @@ async function run() {
             }
         });
 
-        // to get a particular application 
+        // to get all applications for a particular property
         app.get('/applications/:id', async (req, res) => {
             const id = req.params.id;
             const rentApplications = await applicationCollection.find({ propertyId: id }).toArray();
