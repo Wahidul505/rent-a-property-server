@@ -47,7 +47,7 @@ async function run() {
 
         // method for managing users by users theme selves 
 
-        // to insert a new user and update the previous user into database
+        // to insert a new user
         app.post('/sign-up', async (req, res) => {
             const userInfo = req.body;
             const email = req.body.email;
@@ -61,6 +61,7 @@ async function run() {
             }
         });
 
+        // login with the existing account and generate a token after login 
         app.post('/login', async (req, res) => {
             const { email, password } = req.body;
             const user = await userCollection.findOne({ email: email, password: password });
@@ -73,44 +74,27 @@ async function run() {
             }
         })
 
-        // to update an user information 
-        app.patch('/update-user/:email', async (req, res) => {
-            const email = req.params.email;
-            const userInfo = req.body;
-            const filter = { email: email };
-            const updateDoc = {
-                $set: userInfo
-            };
-            const result = await userCollection.updateOne(filter, updateDoc);
-            res.send(result);
-        });
-
-        // to get a particular user 
-        app.get('/user/:email', async (req, res) => {
-            const email = req.params.email;
-            const user = await userCollection.findOne({ email: email });
-            res.send(user);
-        });
-
-
+        // to give property for rent from seller
         app.post('/property', async (req, res) => {
             const property = req.body;
             const result = await propertyCollection.insertOne(property);
             res.send(result);
         });
 
+        // getting all properties 
         app.get('/property', async (req, res) => {
             const properties = await propertyCollection.find().toArray();
             res.send(properties);
         });
 
+        // get a particular property 
         app.get('/property/:id', async (req, res) => {
             const id = req.params.id;
             const property = await propertyCollection.findOne({ _id: ObjectId(id) });
             res.send(property);
         });
 
-        // to post an application from renter 
+        // to apply for a property 
         app.post('/applications', verifyJWT, async (req, res) => {
             const booking = req.body;
             const result = await applicationCollection.insertOne(booking);
@@ -137,18 +121,21 @@ async function run() {
             }
         });
 
+        // to get all the properties that a renter applied for 
         app.get('/my-rents/:email', async (req, res) => {
             const email = req.params.email;
             const bookings = await applicationCollection.find({ renterEmail: email }).toArray();
             res.send(bookings);
         });
 
+        // to get all the properties that a seller posted for rent 
         app.get('/my-sales/:email', async (req, res) => {
             const email = req.params.email;
             const myProperties = await propertyCollection.find({ sellerEmail: email }).toArray();
             res.send(myProperties);
         });
 
+        // to check the renter application is it applied or not 
         app.get('/isApplied', async (req, res) => {
             const id = req.query.id;
             const email = req.query.email;
@@ -161,7 +148,8 @@ async function run() {
             }
         });
 
-        app.get('/rent-applications/:id', async (req, res) => {
+        // to get a particular application 
+        app.get('/applications/:id', async (req, res) => {
             const id = req.params.id;
             const rentApplications = await applicationCollection.find({ propertyId: id }).toArray();
             res.send(rentApplications);
