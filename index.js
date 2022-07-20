@@ -45,7 +45,18 @@ async function run() {
         const propertyCollection = client.db('rent-property').collection('properties');
         const applicationCollection = client.db('rent-property').collection('applications');
 
-        // method for managing users by users theme selves 
+        // middleware for verifying admin 
+        const verifyAdmin = async (req, res, next) => {
+            const requester = req.decoded.email;
+            const requesterInfo = await userCollection.findOne({ email: requester });
+            const isAdmin = requesterInfo?.role === "admin";
+            if (!isAdmin) {
+                return res.status(403).send({ message: 'Forbidden Accessss' });
+            }
+            else {
+                next();
+            }
+        };
 
         // to insert a new user
         app.post('/sign-up', async (req, res) => {
@@ -72,7 +83,7 @@ async function run() {
             else {
                 res.send({ status: false, error: 'Authentication Error' });
             }
-        })
+        });
 
         // to give property for rent from seller
         app.post('/property', verifyJWT, async (req, res) => {
@@ -153,6 +164,19 @@ async function run() {
             const id = req.params.id;
             const rentApplications = await applicationCollection.find({ propertyId: id }).toArray();
             res.send(rentApplications);
+        });
+
+        app.get('/user/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            const user = await userCollection.findOne({ email: email });
+            const isAdmin = user?.role === 'admin' ? true : false;
+            res.send({ isAdmin });
+        });
+
+        app.delete('/property/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const result = await propertyCollection.deleteOne({ _id: ObjectId(id) });
+            res.send(result);
         });
 
     }
