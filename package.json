@@ -1,7 +1,6 @@
 {
   "name": "rent-a-property-server",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -19,5 +18,15 @@
     "mongodb": "^4.7.0",
     "netlify-lambda": "^2.0.15",
     "serverless-http": "^3.0.1"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Wahidul505/rent-a-property-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Wahidul505/rent-a-property-server/issues"
+  },
+  "homepage": "https://github.com/Wahidul505/rent-a-property-server#readme",
+  "description": ""
 }
