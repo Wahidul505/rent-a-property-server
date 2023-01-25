@@ -22,7 +22,7 @@ const verifyJWT = (req, res, next) => {
     }
     else {
         const token = authHeader.split(' ')[1];
-        jwt.verify(token, "e06f5f0d36d5685dcf1933065f61d7de38adcd27bb53ef42cb8a11bdcbad6904ec51a7e03a1e2dd17c5e15f9130074e23dce51813db4ef3d17e7f1b71da65712", function (err, decoded) {
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
             if (err) {
                 return res.status(403).send({ message: 'Forbidden Access' });
             }
@@ -35,7 +35,7 @@ const verifyJWT = (req, res, next) => {
 };
 
 
-const uri = `mongodb+srv://rent_property_admin:A0TtQzcLM61unp2u@cluster0.srywn.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_ADMIN}:${process.env.DB_PASS}@cluster0.srywn.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 async function run() {
@@ -77,7 +77,7 @@ async function run() {
             const { email, password } = req.body;
             const user = await userCollection.findOne({ email: email, password: password });
             if (user) {
-                const token = jwt.sign({ email: email }, "e06f5f0d36d5685dcf1933065f61d7de38adcd27bb53ef42cb8a11bdcbad6904ec51a7e03a1e2dd17c5e15f9130074e23dce51813db4ef3d17e7f1b71da65712", { expiresIn: '1d' });
+                const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' });
                 res.send({ status: true, user, token });
             }
             else {
