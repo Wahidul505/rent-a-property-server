@@ -95,7 +95,7 @@ async function run() {
     });
 
     // to give property for rent from seller
-    app.post("/property", verifyJWT, async (req, res) => {
+    app.post("/property", async (req, res) => {
       const property = req.body;
       const result = await propertyCollection.insertOne(property);
       res.send(result);
@@ -126,7 +126,7 @@ async function run() {
       const { id, status, email } = req.query;
       console.log(id, status, email);
       const application = await applicationCollection.findOne({
-        sellerEmail: email,
+        owner_email: email,
       });
       if (application) {
         const filter = { _id: ObjectId(id) };
@@ -146,7 +146,7 @@ async function run() {
     app.get("/my-rents/:email", verifyJWT, async (req, res) => {
       const email = req.params.email;
       const bookings = await applicationCollection
-        .find({ renterEmail: email })
+        .find({ applicant_email: email })
         .toArray();
       res.send(bookings);
     });
@@ -155,7 +155,7 @@ async function run() {
     app.get("/my-sales/:email", verifyJWT, async (req, res) => {
       const email = req.params.email;
       const myProperties = await propertyCollection
-        .find({ sellerEmail: email })
+        .find({ owner_email: email })
         .toArray();
       res.send(myProperties);
     });
@@ -165,8 +165,8 @@ async function run() {
       const id = req.query.id;
       const email = req.query.email;
       const booking = await applicationCollection.findOne({
-        propertyId: id,
-        renterEmail: email,
+        property_id: id,
+        applicant_email: email,
       });
       if (booking) {
         res.send({ success: true, status: booking.status });
@@ -179,16 +179,25 @@ async function run() {
     app.get("/applications/:id", verifyJWT, async (req, res) => {
       const id = req.params.id;
       const rentApplications = await applicationCollection
-        .find({ propertyId: id })
+        .find({ property_id: id })
         .toArray();
       res.send(rentApplications);
     });
 
-    app.get("/user/:email", verifyJWT, async (req, res) => {
+    app.get("/admin/:email", verifyJWT, async (req, res) => {
       const email = req.params.email;
       const user = await userCollection.findOne({ email: email });
       const isAdmin = user?.role === "admin" ? true : false;
       res.send({ isAdmin });
+    });
+
+    app.get("/user/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = await userCollection.findOne(
+        { email: email },
+        { projection: { password: 0 } }
+      );
+      res.send(user);
     });
 
     app.delete("/property/:id", verifyJWT, verifyAdmin, async (req, res) => {
